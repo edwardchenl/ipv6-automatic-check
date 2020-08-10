@@ -1,0 +1,49 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import requests
+import time
+import pycurl
+
+url = sys.argv[1]
+content = sys.argv[2]
+path = sys.argv[3]
+
+localtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+if not os.path.exists(path):
+        os.makedirs(path)
+        #print(f"create dir {path} success!")
+
+f = open(f"{path}/ipv6_http_check.log", "a+")
+
+time1 = time.time()
+
+c = pycurl.Curl()
+c.setopt(pycurl.URL, url)
+c.setopt(pycurl.TIMEOUT,3)
+c.perform()
+total = c.getinfo(pycurl.TOTAL_TIME)
+start = c.getinfo(pycurl.PRETRANSFER_TIME)
+print("total: "+str(total)+" start: "+str(start)+"\r\n")
+
+time3 = time.time()
+print(str(time3-time1)+"\r\n")
+
+try:
+        r = requests.get(url, timeout=3)
+        time2 = time.time()
+        print(str(time2-time3)+"\r\n")
+
+        if r.status_code != 200:
+                raise
+        if r.text.find(content) == -1:
+                raise
+                
+        print("monitor:success")
+        print(r.elapsed.microseconds)
+        print(localtime+str(int((time2-time1)*1000%1000))+"ms\r\n", file = f)
+
+except:
+        print("monitor:failed")

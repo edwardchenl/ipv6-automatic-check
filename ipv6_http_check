@@ -1,0 +1,48 @@
+#!/usr/bin/python3
+
+import socket
+import sys
+import time
+import os
+
+localtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+data_send = sys.argv[3]
+data_recv = sys.argv[5]
+path = sys.argv[6]
+host = sys.argv[4]
+
+sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+sock.settimeout(5)
+
+if not os.path.exists(path):
+	os.makedirs(path)
+	#print(f"create dir {path} success!")
+
+f = open(f"{path}/ipv6_tcp_check.log", "a+")
+
+time1 = time.time()
+
+try:
+	sock.connect((sys.argv[1], int(sys.argv[2])))
+	if len(data_send) > 0:
+		sock.send(data_send.encode("utf-8")+b'\x0d\x0a'+host.encode("utf-8")+b'\x0d\x0a\x0d\x0a')
+		time2 = time.time()
+
+	if len(data_recv) > 0:
+		sock.settimeout(3)
+		data=bytes.decode(sock.recv(1024))
+        
+		if data.find(data_recv) >= 0:
+			result = ' monitor:success\r\n'
+		else:
+			result = ' monitor:fail\r\n'
+	else:
+		result = ' monitor:success\r\n'
+	if len(data_send) == 0:
+		time2 = time.time()
+
+	print(localtime+result+str(int((time2-time1)*1000%1000))+"ms\r\n", file = f)
+	sock.close()
+
+except:
+	print(localtime+" monitor:fail\r\n", file = f)

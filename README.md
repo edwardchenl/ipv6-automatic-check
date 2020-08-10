@@ -2,7 +2,7 @@
 include TCP and HTTP application check
 
 Tcp check usage:
-You can add a cron to do automatic check and export the check report to the dictionary n
+You can add a cron to do automatic check and export the check report to the dictionary.
 */15 * * * * python3 /root/ipv6_tcp_check.py 2400::1 80 'test123' 'ok' dictionary
 
 Http check usage:
